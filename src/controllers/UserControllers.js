@@ -1,3 +1,5 @@
+const UserModel = require("../models/UserModel.js");
+
 class UserController {
     createUser(req, res) {
         const {
@@ -7,28 +9,32 @@ class UserController {
         } = req.body;
 
         if (!name || !email || !pass || name.trim() === "" || email.trim() === "" || pass.trim() === "") {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
-                message: "Os campos nome, email e pass, são requiridos."
+                message: "Nome, email e senha são obrigatórios."
             });
         }
+
         try {
             UserModel.createUser([name, email, pass], (err, lastID) => {
                 if (err) {
-                    res.status(500).json({
+                    return res.status(500).json({
                         success: false,
-                        message: "Internal Server Error"
+                        message: "Erro ao criar usuário. Tente novamente."
                     });
                 }
 
-                res.status(201).json({
+                return res.status(201).json({
                     success: true,
-                    message: "Cadastro de usuário realizado com sucesso.",
+                    message: "Usuário criado com sucesso.",
                     idUsuario: lastID
                 });
             });
         } catch (error) {
-            throw new Error(error.message);
+            return res.status(500).json({
+                success: false,
+                message: "Erro inesperado: " + error.message
+            });
         }
     }
 
@@ -36,27 +42,30 @@ class UserController {
         try {
             UserModel.getAllUsers((err, rows) => {
                 if (err) {
-                    res.status(500).json({
+                    return res.status(500).json({
                         success: false,
-                        message: "Internal Server Error"
+                        message: "Erro ao buscar usuários. Tente novamente."
                     });
                 }
-                res.json({
+
+                return res.json({
                     success: true,
-                    message: "Usuários retornado com sucesso.",
+                    message: "Usuários listados com sucesso.",
                     data: rows
                 });
             });
         } catch (error) {
-            throw new Error(error.message);
+            return res.status(500).json({
+                success: false,
+                message: "Erro inesperado: " + error.message
+            });
         }
     }
 
-    UpdateUser(req, res) {
+    updateUser(req, res) {
         const {
             id
         } = req.params;
-
         const {
             name,
             email,
@@ -64,32 +73,35 @@ class UserController {
         } = req.body;
 
         if (!name || !email || !pass || name.trim() === "" || email.trim() === "" || pass.trim() === "") {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
-                message: "Os campos nome, email e pass, são requiridos."
+                message: "Nome, email e senha são obrigatórios."
             });
         }
-        userModel.updateuser(id, [name, email, pass], (err, changes) => {
+
+        UserModel.updateUser(id, [name, email, pass], (err, changes) => {
             if (err) {
-                res.status(500).json({
+                return res.status(500).json({
                     success: false,
-                    message: "Internal Server Error"
+                    message: "Erro ao atualizar usuário. Tente novamente."
                 });
             }
+
             if (changes === 0) {
-                res.status(404).json({
+                return res.status(404).json({
                     success: false,
                     message: "Usuário não encontrado."
-                })
+                });
             }
-            res.json({
-                succes: true,
+
+            return res.json({
+                success: true,
                 message: "Usuário atualizado com sucesso.",
                 data: {
-                    id: id,
-                    name: name,
-                    email: email,
-                    pass: pass
+                    id,
+                    name,
+                    email,
+                    pass
                 }
             });
         });
@@ -102,20 +114,22 @@ class UserController {
 
         UserModel.deleteUser(id, (err, changes) => {
             if (err) {
-                res.status(500).json({
+                return res.status(500).json({
                     success: false,
-                    message: "Internal Server Error"
+                    message: "Erro ao deletar usuário. Tente novamente."
                 });
             }
+
             if (changes === 0) {
-                res.status(404).json({
+                return res.status(404).json({
                     success: false,
                     message: "Usuário não encontrado."
-                })
+                });
             }
-            res.json({
+
+            return res.json({
                 success: true,
-                message: `Usuário ${id} deletado com sucesso.`
+                message: `Usuário com ID ${id} deletado com sucesso.`
             });
         });
     }
