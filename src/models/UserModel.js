@@ -1,4 +1,4 @@
-const db = require("../database/database.js");
+const db = require("../Database/database.js");
 
 class UserModel {
     createUser(user, callback) {
@@ -9,8 +9,9 @@ class UserModel {
     }
 
     getAllUsers(callback) {
-        db.all("SELECT * FROM users", [], function (err, users) {
-            callback(err, users);
+        const query = "SELECT id, name, email FROM users";
+        db.all(query, [], (err, rows) => {
+            callback(err, rows);
         });
     }
 
@@ -25,6 +26,13 @@ class UserModel {
         const query = "DELETE FROM users WHERE id = ?";
         db.run(query, id, function (err) {
             callback(err, this.changes);
+        });
+    }
+
+    validateUser(email, callback) {
+        const query = "SELECT id, email, pass FROM users WHERE email = ?";
+        db.get(query, [email], (err, row) => {
+            callback(err, row);
         });
     }
 }
